@@ -1,57 +1,40 @@
-# DocLens
+# 🧠 Cognitive Agent
 
-> Upload any document, get its essence in minutes, and then have a natural conversation with it.
+Cognitive Agent is an intelligent web application that transforms static documents and web pages into interactive conversational partners. Upload a PDF or provide a URL, and the application will ingest, summarize, and prepare the content, allowing you to ask questions and get precise answers directly from the source material.
 
-![DocLens Screenshot](https://i.imgur.com/your-screenshot-url.png)
+![Cognitive Agent Screenshot](https://i.imgur.com/your-screenshot-url.png)
 *(It's highly recommended to replace the link above with a real screenshot or GIF of your application in action!)*
 
 ---
 
 ## 📋 Table of Contents
 
-* [Functionalities](#-functionalities)
 * [How It Works](#-how-it-works)
 * [Tech Stack](#-tech-stack)
 * [Getting Started](#-getting-started)
-    * [Prerequisites](#prerequisites)
-    * [Backend Setup](#backend-setup)
-    * [Frontend Setup](#frontend-setup)
 * [Usage](#-usage)
 * [Contributing](#-contributing)
 * [License](#-license)
 
 ---
 
-## ✨ Functionalities
+## ✨ How It Works
 
-* **Look into your doc →** The system extracts text from PDFs or websites and structures it for AI.
+This application uses a multi-agent system to process, understand, and converse with your documents. Below is a breakdown of the core features and the technology that powers them.
 
-* **Grab the summary →** You instantly receive a clear, concise summary, so you don’t have to read hundreds of pages.
+* **Multi-Source Ingestion:** The FastAPI backend exposes an endpoint that accepts both file uploads (`UploadFile`) and URL strings (`Form`). If a file is provided, its bytes are read directly. If a URL is provided, the `scrape_website_text` function uses the `requests` and `BeautifulSoup` libraries to fetch and parse the HTML content, extracting clean text.
 
-* **Ask anything →** Through an interactive chat, you can query details, clarify points, or explore deeper insights, with suggested questions guiding you.
+* **Hybrid PDF Processing:** When a PDF is uploaded, the `read_pdf_file` function first attempts to extract text directly using `PyMuPDF`. It iterates through each page; if a page yields no text (a sign of a scanned image), it automatically falls back to an OCR pipeline. The page is rendered as a high-DPI image, which is then processed by `Pytesseract` to recognize and extract the text.
 
-* **Always accessible →** Instead of just static summaries, it’s like having a smart assistant who has read the entire document for you and is ready to answer follow-ups on demand.
+* **AI-Powered Summarization:** The full, extracted text is passed to the `run_summarizer_agent`. This agent takes large documents, breaks them into manageable chunks, and sends each chunk to the Google Gemini model with a prompt to summarize it. Finally, a concluding prompt asks the model to synthesize these partial summaries into a single, cohesive final summary.
 
----
+* **Interactive Chat:** The React frontend manages a chat history state. When you send a message, it makes a POST request to the `/chat/` endpoint. The `answer_question_orchestrator` on the backend receives the question, the chat history, and the session's context. It first attempts to answer using only the summary.
 
-## ⚙️ How It Works
+* **Retrieval-Augmented Generation (RAG):** If the initial attempt to answer from the summary fails, the orchestrator escalates to the `run_rag_pipeline`. This function takes your question and uses a FAISS vector store (created when the document was first processed) to find the most semantically similar text chunks from the original document. These chunks and your question are then sent to the Gemini model with a prompt instructing it to answer based *only* on the provided context, ensuring factual, grounded responses.
 
-### Important Modules
+* **Smart Question Suggestions:** After the initial summary is generated, the `run_question_suggester_agent` is called. It sends the summary to the Gemini model with a prompt asking it to generate three relevant, insightful follow-up questions a user might have. These are then displayed on the frontend to help start the conversation.
 
-* **OCR (Optical Character Recognition)**
-    * Like Google Lens for your PDFs — it can read text even from scanned documents or images.
-    * *Example: Upload a scanned offer letter → OCR extracts the text so AI can process it.*
-
-* **RAG (Retrieval-Augmented Generation)**
-    * Think of it like ChatGPT with “deep search” turned on. Instead of guessing, it searches your document for relevant chunks and answers based *only* on that information.
-    * *Example: Ask "What was the base salary?" → RAG fetches the exact table and gives the grounded answer.*
-
-* **Orchestrator**
-    * Acts as the project manager for the AI, deciding which tool to use and when. It handles the logic for when to use OCR, when to build the RAG index, and when to switch into chat mode, ensuring each module runs at the right time.
-
-### The Actual Workflow
-
-![DocLens Workflow](image.png)
+* **Engaging User Experience:** The React application closely monitors the processing status. When a document is submitted, the frontend polls a `/status/{session_id}` endpoint. The backend updates the status with progress messages like "Summarizing content…" or "Building vector index…". The frontend displays these messages in real-time. If the initial upload takes more than 20 seconds (a sign of slow OCR), a riddle component is displayed to keep the user engaged.
 
 ---
 
@@ -135,7 +118,7 @@ Follow these instructions to set up and run the project on your local machine.
     ```bash
     uvicorn api:app --reload
     ```
-    The backend will now be running at `http://1.2.3.4:8000`.
+    The backend will now be running at `http://127.0.0.1:8000`.
 
 2.  **Start the Frontend Application:**
     In a **separate terminal**, from the `frontend/` directory, run the React development server:
@@ -150,7 +133,7 @@ Follow these instructions to set up and run the project on your local machine.
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to help improve DocLens, please follow these steps:
+Contributions are welcome! If you'd like to help improve Cognitive Agent, please follow these steps:
 
 1.  Fork the repository.
 2.  Create a new branch (`git checkout -b feature/your-feature-name`).
