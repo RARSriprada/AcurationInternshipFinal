@@ -233,6 +233,37 @@ export default function App() {
     const userMessage: Message = { role: 'user', content: q };
     setChatHistory(prev => [...prev, userMessage]);
 
+    const lowerCaseQuery = q.trim().toLowerCase();
+
+    // --- 🚀 UPDATED: Expanded local replies ---
+    const greetings = ['hi', 'hey', 'hello', 'yo', 'sup', 'howdy', 'greetings'];
+    const farewells = ['bye', 'goodbye', 'see you', 'see ya', 'cya', 'farewell', 'take care'];
+
+    if (greetings.includes(lowerCaseQuery)) {
+      const assistantMessage: Message = { 
+        role: 'assistant', 
+        content: 'Hello! How can I help you with your document today?'
+      };
+      setTimeout(() => {
+        setChatHistory(prev => [...prev, assistantMessage]);
+        setIsLoading(false);
+      }, 500);
+      return;
+    }
+
+    if (farewells.includes(lowerCaseQuery)) {
+      const assistantMessage: Message = { 
+        role: 'assistant', 
+        content: 'Goodbye! Feel free to return if you have more questions.'
+      };
+      setTimeout(() => {
+        setChatHistory(prev => [...prev, assistantMessage]);
+        setIsLoading(false);
+      }, 500);
+      return;
+    }
+    // --- End of new logic ---
+
     try {
       const res = await fetch('http://127.0.0.1:8000/chat/', {
         method: 'POST',
