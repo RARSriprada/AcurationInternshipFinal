@@ -2,7 +2,7 @@
 
 Cognitive Agent is an intelligent web application that transforms static documents and web pages into interactive conversational partners. Upload a PDF or provide a URL, and the application will ingest, summarize, and prepare the content, allowing you to ask questions and get precise answers directly from the source material.
 
-![Cognitive Agent Screenshot](https://drive.google.com/file/d/19AmolhbVsfZctNXSI9gc94ZRxPYJww4E/view?usp=drive_link)
+![Cognitive Agent Screenshot](https://drive.google.com/file/d/19AmolhbVsfZctNXSI9gc94ZRxPYJww4E/view?usp=sharing)
 *(It's highly recommended to replace the link above with a real screenshot or GIF of your application in action!)*
 
 ---
